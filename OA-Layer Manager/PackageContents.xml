@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ApplicationPackage SchemaVersion="1.0" AutodeskProduct="AutoCAD" ProductType="Application" AppVersion="1.0.3" ProductCode="{CBE7C224-850C-4A3C-93E4-D4C811CA44D5}" Name="OA Layer Manager" Description="Batch process AutoCAD layers" Author="OA">
+<ApplicationPackage SchemaVersion="1.0" AutodeskProduct="AutoCAD" ProductType="Application" AppVersion="1.1.0" ProductCode="{CBE7C224-850C-4A3C-93E4-D4C811CA44D5}" Name="OA Layer Manager" Description="Batch process AutoCAD layers" Author="OA">
   <CompanyDetails Name="OA" Url="" Email="" />
-  <RuntimeRequirements OS="Win64" Platform="AutoCAD*" SeriesMin="R25.0" />
-  <Components Description="AutoCAD 2025+ x64">
+  <RuntimeRequirements OS="Win64" Platform="AutoCAD*" SeriesMin="R24.0" />
+
+  <!-- AutoCAD 2021-2024 run on .NET Framework 4.8 -> load the net48 build. -->
+  <Components Description="AutoCAD 2021-2024 (.NET Framework)">
+    <RuntimeRequirements OS="Win64" Platform="AutoCAD*" SeriesMin="R24.0" SeriesMax="R24.3" />
+    <ComponentEntry AppName="OA Layer Manager" Version="1.1.0" ModuleName="./Contents/net48/OA.LayerBatcher.dll" AppDescription="OA Layer Manager Plugin" LoadOnAutoCADStartup="True">
+      <Commands GroupName="OA_TOOLS">
+        <Command Local="OA_BATCHLAYERS" Global="OA_BATCHLAYERS" />
+      </Commands>
+    </ComponentEntry>
+  </Components>
+
+  <!-- AutoCAD 2025+ run on .NET 8 -> load the net8.0 build. -->
+  <Components Description="AutoCAD 2025+ (.NET 8)">
     <RuntimeRequirements OS="Win64" Platform="AutoCAD*" SeriesMin="R25.0" />
-    <ComponentEntry AppName="OA Layer Manager" Version="1.0.3" ModuleName="./Contents/OA.LayerBatcher.dll" AppDescription="OA Layer Manager Plugin" LoadOnAutoCADStartup="True">
+    <ComponentEntry AppName="OA Layer Manager" Version="1.1.0" ModuleName="./Contents/net8.0-windows/OA.LayerBatcher.dll" AppDescription="OA Layer Manager Plugin" LoadOnAutoCADStartup="True">
       <Commands GroupName="OA_TOOLS">
         <Command Local="OA_BATCHLAYERS" Global="OA_BATCHLAYERS" />
       </Commands>

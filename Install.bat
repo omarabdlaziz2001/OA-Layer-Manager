@@ -15,12 +15,12 @@ if not exist "%BUNDLE_DIR%" (
     exit /b 1
 )
 
-:: Warn if no compatible AutoCAD (2025+) is detected
+:: Warn if no compatible AutoCAD (2021-2026) is detected
 set "ACAD_FOUND=0"
-for /D %%D in ("C:\Program Files\Autodesk\AutoCAD 2025" "C:\Program Files\Autodesk\AutoCAD 2026") do if exist "%%D" set "ACAD_FOUND=1"
+for %%Y in (2021 2022 2023 2024 2025 2026) do if exist "C:\Program Files\Autodesk\AutoCAD %%Y" set "ACAD_FOUND=1"
 if "%ACAD_FOUND%"=="0" (
-    echo WARNING: No AutoCAD 2025 or newer installation detected.
-    echo This plugin requires AutoCAD 2025^+ ^(net8.0^). It will NOT load in 2024 or older.
+    echo WARNING: No AutoCAD 2021-2026 installation detected.
+    echo This plugin supports AutoCAD 2021 and newer.
     echo Installation will continue, but the plugin may not load.
     echo.
 )

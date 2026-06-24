@@ -1,18 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <!-- net48     -> AutoCAD 2021-2024 (.NET Framework 4.8)
+         net8.0-windows -> AutoCAD 2025+ (.NET 8) -->
+    <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <Platforms>AnyCPU</Platforms>
+    <LangVersion>latest</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <!-- Detect installed AutoCAD version -->
+    <!-- Different AutoCAD releases run on different .NET runtimes, so each target
+         framework references the assemblies from a matching AutoCAD install. -->
+  </PropertyGroup>
+
+  <!-- .NET Framework target: reference a .NET Framework AutoCAD (2021-2024). -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net48'">
     <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2021')">C:\Program Files\Autodesk\AutoCAD 2021</AcadDir>
     <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2022')">C:\Program Files\Autodesk\AutoCAD 2022</AcadDir>
     <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2023')">C:\Program Files\Autodesk\AutoCAD 2023</AcadDir>
     <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2024')">C:\Program Files\Autodesk\AutoCAD 2024</AcadDir>
+  </PropertyGroup>
+
+  <!-- .NET 8 target: reference a .NET 8 AutoCAD (2025+). -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
     <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2025')">C:\Program Files\Autodesk\AutoCAD 2025</AcadDir>
     <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2026')">C:\Program Files\Autodesk\AutoCAD 2026</AcadDir>
   </PropertyGroup>
+
+  <!-- Lets the .NET SDK compile the net48 target without a separate targeting pack. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="AcCoreMgd">
@@ -41,26 +58,25 @@
     <Resource Include="Resources\icon.png" />
   </ItemGroup>
 
+  <!-- Deploy each framework build into its own bundle subfolder. PackageContents.xml
+       maps each AutoCAD version range to the matching DLL (net48 vs net8.0-windows).
+       Runs once per target framework; cleans only its own subfolder. -->
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <PropertyGroup>
       <AppDataBundle>$(AppData)\Autodesk\ApplicationPlugins\OALayerManager.bundle</AppDataBundle>
       <RepoBundle>$(ProjectDir)..\OALayerManager.bundle</RepoBundle>
     </PropertyGroup>
     <ItemGroup>
-      <!-- Only our own plugin DLL ships in the bundle. AutoCAD API assemblies
-           (Ac*/Ad*) are Private=False and must never be copied (see CLAUDE.md). -->
-      <BundleContents Include="$(TargetDir)$(TargetName).dll" />
-      <BundleRoot Include="$(ProjectDir)PackageContents.xml" />
+      <!-- Only our own plugin DLL ships. AutoCAD API assemblies (Ac*/Ad*) are
+           Private=False and must never be copied (see CLAUDE.md). -->
+      <PluginDll Include="$(TargetDir)$(TargetName).dll" />
+      <PkgRoot Include="$(ProjectDir)PackageContents.xml" />
     </ItemGroup>
-    <!-- Wipe old Contents first so a stale DLL can never linger and get auto-loaded
-         instead of this build (root cause of the "button stopped working" regression).
-         The live AppData copy is ContinueOnError: if AutoCAD is open it locks the DLL,
-         which must not fail the build — just close AutoCAD and rebuild to redeploy. -->
-    <RemoveDir Directories="$(AppDataBundle)\Contents" ContinueOnError="WarnAndContinue" />
-    <Copy SourceFiles="@(BundleContents)" DestinationFolder="$(AppDataBundle)\Contents" ContinueOnError="WarnAndContinue" />
-    <Copy SourceFiles="@(BundleRoot)" DestinationFolder="$(AppDataBundle)" ContinueOnError="WarnAndContinue" />
-    <RemoveDir Directories="$(RepoBundle)\Contents" />
-    <Copy SourceFiles="@(BundleContents)" DestinationFolder="$(RepoBundle)\Contents" />
-    <Copy SourceFiles="@(BundleRoot)" DestinationFolder="$(RepoBundle)" />
+    <RemoveDir Directories="$(AppDataBundle)\Contents\$(TargetFramework)" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(PluginDll)" DestinationFolder="$(AppDataBundle)\Contents\$(TargetFramework)" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(PkgRoot)" DestinationFolder="$(AppDataBundle)" ContinueOnError="WarnAndContinue" />
+    <RemoveDir Directories="$(RepoBundle)\Contents\$(TargetFramework)" />
+    <Copy SourceFiles="@(PluginDll)" DestinationFolder="$(RepoBundle)\Contents\$(TargetFramework)" />
+    <Copy SourceFiles="@(PkgRoot)" DestinationFolder="$(RepoBundle)" />
   </Target>
 </Project>

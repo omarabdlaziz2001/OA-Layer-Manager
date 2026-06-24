@@ -2,8 +2,8 @@
 
 [![Latest release](https://img.shields.io/github/v/release/omarabdlaziz2001/OA-Layer-Manager?label=download)](https://github.com/omarabdlaziz2001/OA-Layer-Manager/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![AutoCAD](https://img.shields.io/badge/AutoCAD-2025%2B-red)
-![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
+![AutoCAD](https://img.shields.io/badge/AutoCAD-2021%E2%80%932026-red)
+![.NET](https://img.shields.io/badge/.NET-Framework%204.8%20%7C%208.0-512BD4)
 
 A user-friendly AutoCAD plugin that **batch-edits layer properties — Color, Lineweight,
 and Linetype — across many DWG files at once**, without opening each drawing.
@@ -27,9 +27,10 @@ and Linetype — across many DWG files at once**, without opening each drawing.
 
 ## Requirements
 
-- **AutoCAD 2025 or newer** (the plugin is built for .NET 8 and will **not** load in
-  AutoCAD 2024 or earlier).
-- Windows 64-bit.
+- **AutoCAD 2021–2026** (Windows 64-bit). The installer ships two builds and AutoCAD
+  loads the right one automatically:
+  - **2021–2024** → .NET Framework 4.8 build
+  - **2025–2026** → .NET 8 build
 
 ## Installation
 
@@ -40,7 +41,7 @@ and Linetype — across many DWG files at once**, without opening each drawing.
 2. Run it. (It installs per-user, so **no admin rights** are needed. If Windows
    SmartScreen warns about an unknown publisher, click **More info → Run anyway** —
    the installer is unsigned.)
-3. Start AutoCAD 2025 and open the **OA Tools** ribbon tab.
+3. Start AutoCAD and open the **OA Tools** ribbon tab.
    - If AutoCAD shows a security prompt about an unapproved application, choose
      **Always Load**.
 
@@ -97,7 +98,7 @@ of each script. (For most users, the GitHub release installer above is simpler.)
 
 ## Troubleshooting
 
-- **The OA Tools tab doesn't appear:** confirm you're on AutoCAD **2025+**, then check
+- **The OA Tools tab doesn't appear:** confirm you're on AutoCAD **2021–2026**, then check
   the startup log at `%TEMP%\OA_LayerBatcher.log` — it records what happened during
   load. You can always launch the tool by typing `OA_BATCHLAYERS`.
 - **A file is skipped during Apply:** the summary states the reason — usually the file
