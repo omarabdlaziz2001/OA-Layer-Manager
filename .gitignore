@@ -1,0 +1,14 @@
+# Build output
+bin/
+obj/
+*.zip
+installer/Output/
+
+# Generated plugin bundle (produced by the build's PostBuild step; not source).
+# The source of truth is "OA-Layer Manager/PackageContents.xml".
+/OALayerManager.bundle/
+
+# Visual Studio / IDE
+.vs/
+*.user
+*.suo

@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Platforms>AnyCPU</Platforms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- Detect installed AutoCAD version -->
+    <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2021')">C:\Program Files\Autodesk\AutoCAD 2021</AcadDir>
+    <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2022')">C:\Program Files\Autodesk\AutoCAD 2022</AcadDir>
+    <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2023')">C:\Program Files\Autodesk\AutoCAD 2023</AcadDir>
+    <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2024')">C:\Program Files\Autodesk\AutoCAD 2024</AcadDir>
+    <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2025')">C:\Program Files\Autodesk\AutoCAD 2025</AcadDir>
+    <AcadDir Condition="Exists('C:\Program Files\Autodesk\AutoCAD 2026')">C:\Program Files\Autodesk\AutoCAD 2026</AcadDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="AcCoreMgd">
+      <HintPath>$(AcadDir)\AcCoreMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AcDbMgd">
+      <HintPath>$(AcadDir)\AcDbMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AcMgd">
+      <HintPath>$(AcadDir)\AcMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AcWindows">
+      <HintPath>$(AcadDir)\AcWindows.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AdWindows">
+      <HintPath>$(AcadDir)\AdWindows.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\icon.png" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <PropertyGroup>
+      <AppDataBundle>$(AppData)\Autodesk\ApplicationPlugins\OALayerManager.bundle</AppDataBundle>
+      <RepoBundle>$(ProjectDir)..\OALayerManager.bundle</RepoBundle>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Only our own plugin DLL ships in the bundle. AutoCAD API assemblies
+           (Ac*/Ad*) are Private=False and must never be copied (see CLAUDE.md). -->
+      <BundleContents Include="$(TargetDir)$(TargetName).dll" />
+      <BundleRoot Include="$(ProjectDir)PackageContents.xml" />
+    </ItemGroup>
+    <!-- Wipe old Contents first so a stale DLL can never linger and get auto-loaded
+         instead of this build (root cause of the "button stopped working" regression).
+         The live AppData copy is ContinueOnError: if AutoCAD is open it locks the DLL,
+         which must not fail the build — just close AutoCAD and rebuild to redeploy. -->
+    <RemoveDir Directories="$(AppDataBundle)\Contents" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(BundleContents)" DestinationFolder="$(AppDataBundle)\Contents" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(BundleRoot)" DestinationFolder="$(AppDataBundle)" ContinueOnError="WarnAndContinue" />
+    <RemoveDir Directories="$(RepoBundle)\Contents" />
+    <Copy SourceFiles="@(BundleContents)" DestinationFolder="$(RepoBundle)\Contents" />
+    <Copy SourceFiles="@(BundleRoot)" DestinationFolder="$(RepoBundle)" />
+  </Target>
+</Project>
